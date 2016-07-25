@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using RiotApi.Net.RestClient;
 using RiotApi.Net.RestClient.Configuration;
 using RiotApi.Net.RestClient.Dto.CurrentGame;
 using RiotApi.Net.RestClient.Dto.LolStaticData.Champion;
 using RiotApi.Net.RestClient.Dto.Summoner;
 using RiotApi.Net.RestClient.Helpers;
+using Timer = System.Timers.Timer;
 
 namespace SummonerTracker
 {
@@ -54,6 +55,7 @@ namespace SummonerTracker
             //Update();
             PbStatus.Maximum = TimeSpan.FromMinutes(UpdateTime).TotalMilliseconds;           
             Timer.Start();
+            TbName.Focus();
         }
 
         private Timer _timer;
@@ -125,11 +127,11 @@ namespace SummonerTracker
         /// </summary>
         private List<SummonerDto> Summoners => _summonerIDs ?? (_summonerIDs = new List<SummonerDto>());
 
-        private Dictionary<int, ChampionDto> _champions;
+        private Dictionary<long, ChampionDto> _champions;
         /// <summary>
         /// Lista de champions.
         /// </summary>
-        private Dictionary<int, ChampionDto> Champions => _champions ?? (_champions = new Dictionary<int, ChampionDto>());
+        private Dictionary<long, ChampionDto> Champions => _champions ?? (_champions = new Dictionary<long, ChampionDto>());
 
         /// <summary>
         /// Ícone de notificação na tray.
@@ -325,6 +327,15 @@ namespace SummonerTracker
             //}
         //}
 
+        private ChampionDto GetChampion(long champId)
+        {
+            if (!Champions.ContainsKey(champId))
+            {
+                Champions.Add(champId, RiotClient.LolStaticData.GetChampionById(RiotApiConfig.Regions.NA, Convert.ToInt32(champId)));
+            }
+            return Champions[champId];
+        }
+
         private bool IsUpdating { get; set; }
 
         private void Update()
@@ -336,9 +347,10 @@ namespace SummonerTracker
 
             Timer.Stop();
             IsUpdating = true;
-            Cursor = Cursors.Wait;
             TbStatus.Text = "Updating...";
             PbStatus.IsIndeterminate = true;
+            Cursor = Cursors.Wait;
+            Dispatcher.PushFrame(new DispatcherFrame(true));
             try
             {
                 foreach (SummonerDto sum in Summoners)
@@ -355,16 +367,10 @@ namespace SummonerTracker
 
                     using (WebClient client = new WebClient())
                     {
-                        int champId = Convert.ToInt32(cg.Participants.Single(c => c.SummonerId == sum.Id).ChampionId);
-                        if (!Champions.ContainsKey(champId))
-                        {
-                            Champions.Add(champId, RiotClient.LolStaticData.GetChampionById(RiotApiConfig.Regions.NA, Convert.ToInt32(champId)));
-                        }
-
                         NameValueCollection values = new NameValueCollection
                         {
                             ["AuthorizationToken"] = "01e7b9c9dcc343f595d86c2517710e9f",
-                            ["Body"] = $"{sum.Name} is playing as {Champions[champId].Name}."
+                            ["Body"] = $"{sum.Name} is playing as {GetChampion(cg.Participants.Single(c => c.SummonerId == sum.Id).ChampionId).Name}."
                         };
 
                         // client.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
@@ -374,9 +380,10 @@ namespace SummonerTracker
             }
             finally
             {
-                PbStatus.IsIndeterminate = false;
                 Cursor = Cursors.Arrow;
+                PbStatus.IsIndeterminate = false;
                 IsUpdating = false;
+                Dispatcher.PushFrame(new DispatcherFrame(true));
                 Timer.Start();
             }
         }
@@ -385,18 +392,34 @@ namespace SummonerTracker
         {
             if (e.Key == Key.Delete)
             {
-                object[] selectedItems = LbSummoners.SelectedItems.Cast<object>().ToArray();
-                foreach (object selectedItem in selectedItems)
+                ListBoxItem[] selectedItems = LbSummoners.SelectedItems.Cast<ListBoxItem>().ToArray();
+                foreach (ListBoxItem selectedItem in selectedItems)
                 {
                     LbSummoners.Items.Remove(selectedItem);
+                    Summoners.Remove(Summoners.Single(s => s.Name.Equals(selectedItem.Content.ToString())));
                 }
                 e.Handled = true;
             }
         }
 
+        private void AddSumm()
+        {
+            LbSummoners.Items.Add(new ListBoxItem {Content = TbName.Text});
+            GetSummoners(TbName.Text);
+            TbName.Clear();
+        }
+
         private void button_Click(object sender, RoutedEventArgs e)
         {
-            GetSummoners(TbName.Text);
+            AddSumm();
+        }
+
+        private void TbName_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                AddSumm();
+            }
         }
 
         //private void PbStatus_MouseDoubleClick(object sender, MouseButtonEventArgs e)
