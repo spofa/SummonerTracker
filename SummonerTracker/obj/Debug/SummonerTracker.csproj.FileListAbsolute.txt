@@ -1,0 +1,15 @@
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\bin\Debug\SummonerTracker.exe.config
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\obj\Debug\MainWindow.baml
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\obj\Debug\MainWindow.g.cs
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\obj\Debug\App.g.cs
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\obj\Debug\SummonerTracker_MarkupCompile.cache
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\obj\Debug\SummonerTracker.g.resources
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\obj\Debug\SummonerTracker.Properties.Resources.resources
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\obj\Debug\SummonerTracker.csproj.GenerateResource.Cache
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\bin\Debug\SummonerTracker.exe
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\bin\Debug\SummonerTracker.pdb
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\bin\Debug\RiotApi.Net.RestClient.dll
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\bin\Debug\RiotApi.Net.RestClient.xml
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\obj\Debug\SummonerTracker.exe
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\obj\Debug\SummonerTracker.pdb
+C:\Users\Renato\Documents\Visual Studio 2015\Projects\SummonerTracker\SummonerTracker\obj\Debug\SummonerTracker.csprojResolveAssemblyReference.cache
