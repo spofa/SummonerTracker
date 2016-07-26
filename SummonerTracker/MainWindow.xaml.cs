@@ -60,6 +60,10 @@ namespace SummonerTracker
                 Close();
             }
 
+            //Controle de limite de requests
+            LimitRate(TimeSpan.FromSeconds(10), 10); //10 requests every 10 seconds
+            LimitRate(TimeSpan.FromMinutes(10), 500); //500 requests every 10 minutes
+
             List<string> names = new List<string>();
             foreach (ListBoxItem name in LbSummoners.Items)
             {
@@ -224,7 +228,48 @@ namespace SummonerTracker
         /// <summary>
         /// Controle da API da Riot
         /// </summary>
-        private IRiotClient RiotClient => _riotClient ?? (_riotClient = new RiotClient(RiotKey));
+        private IRiotClient RiotClient
+        {
+            get
+            {
+                foreach (var pair in RateLimits)
+                {
+                    RequestRate[pair.Key]++;
+                    while (RequestRate[pair.Key] >= pair.Value)
+                    {
+                        Thread.Sleep(1000);
+                    }
+                }
+                return _riotClient ?? (_riotClient = new RiotClient(RiotKey));
+            }
+        }
+
+        /// <summary>
+        /// Cria um novo limite para requisições e inicia um timer para controle.
+        /// </summary>
+        private void LimitRate(TimeSpan timeSpan, int maxRate)
+        {
+            RateLimits.Add(timeSpan, maxRate);
+            RequestRate.Add(timeSpan, 0);
+            Timer timer = new Timer(timeSpan.TotalMilliseconds);
+            timer.Elapsed += (sender, args) =>
+            {
+                RequestRate[timeSpan] = 0;
+            };
+            timer.Start();
+        }
+
+        private Dictionary<TimeSpan, int> _rateLimits;
+        /// <summary>
+        /// Rate limits per Time span
+        /// </summary>
+        private Dictionary<TimeSpan, int> RateLimits => _rateLimits ?? (_rateLimits = new Dictionary<TimeSpan, int>());
+
+        private Dictionary<TimeSpan, int> _requestRate;
+        /// <summary>
+        /// Request rate at the moment
+        /// </summary>
+        private Dictionary<TimeSpan, int> RequestRate => _requestRate ?? (_requestRate = new Dictionary<TimeSpan, int>());
 
         /// <summary>
         /// Busca as informações para a lista de Summoners
