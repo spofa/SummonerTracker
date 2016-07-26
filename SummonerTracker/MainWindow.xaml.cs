@@ -69,6 +69,11 @@ namespace SummonerTracker
             //    PushalotKey = "01e7b9c9dcc343f595d86c2517710e9f";
             //}
 
+            foreach (string s in ConfigurationManager.AppSettings["Summoners"].Split('|'))
+            {
+                LbSummoners.Items.Add(new ListBoxItem { Content = s });
+            }
+
             //Controle de limite de requests
             LimitRate(TimeSpan.FromSeconds(15), 10); //10 requests every 10 seconds
             LimitRate(TimeSpan.FromMinutes(12), 500); //500 requests every 10 minutes
@@ -113,14 +118,22 @@ namespace SummonerTracker
                         {
                             if ((NextUpdate = NextUpdate.Subtract(TimeSpan.FromMilliseconds(RefreshTime))) == TimeSpan.Zero)
                             {
-                                Update();
-                                NextUpdate = TimeSpan.FromMinutes(UpdateTime);
+                                UpdateResetTimer();
                             }
                         });
                     };
                 }
                 return _timer;
             }
+        }
+
+        /// <summary>
+        /// Realiza o update e reseta o timer para a próxima atualização.
+        /// </summary>
+        private void UpdateResetTimer()
+        {
+            Update();
+            NextUpdate = TimeSpan.FromMinutes(UpdateTime);
         }
 
         private static double UpdateTime => 5;
@@ -143,7 +156,8 @@ namespace SummonerTracker
                     PbStatus.Value = TimeSpan.FromMinutes(UpdateTime).TotalMilliseconds - NextUpdate.TotalMilliseconds;
                     if (oldSpan.Seconds != NextUpdate.Seconds)
                     {
-                        TbStatus.Text = $"Time to next update: {NextUpdate.Add(TimeSpan.FromSeconds(1)).ToString(@"mm\:ss")}";
+                        //TbStatus.Text = $"Time to next update: {NextUpdate.Add(TimeSpan.FromSeconds(1)).ToString(@"mm\:ss")}";
+                        TbStatus.Text = $"Time to next update: {NextUpdate.ToString(@"mm\:ss")}";
                     }
                 }
             }
@@ -503,7 +517,7 @@ namespace SummonerTracker
             }
         }
 
-        private void AddSumm()
+        private void AddSummoner()
         {
             LbSummoners.Items.Add(new ListBoxItem {Content = TbName.Text});
             GetSummoners(TbName.Text);
@@ -512,21 +526,21 @@ namespace SummonerTracker
 
         private void button_Click(object sender, RoutedEventArgs e)
         {
-            AddSumm();
+            AddSummoner();
         }
 
         private void TbName_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                AddSumm();
+                AddSummoner();
             }
         }
 
-        //private void PbStatus_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        //{
-        //    Update();
-        //}
+        private void PbStatus_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            UpdateResetTimer();
+        }
     }
 
     public static class MyExtentions

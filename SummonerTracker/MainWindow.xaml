@@ -9,59 +9,9 @@
         <TextBlock x:Name="TbTitle" HorizontalAlignment="Left" Margin="28,17,0,0" TextWrapping="Wrap" Text="Summoner name" VerticalAlignment="Top" FontWeight="Bold"/>
         <TextBox x:Name="TbName" VerticalContentAlignment="Center" Height="23" Margin="28,38,100,0" TextWrapping="Wrap" VerticalAlignment="Top" PreviewKeyDown="TbName_PreviewKeyDown"/>
         <Button x:Name="BtAdd" Content="Add" Margin="0,38,28,0" Height="23" VerticalAlignment="Top" HorizontalAlignment="Right" Width="67" Click="button_Click"/>
-        <ListBox x:Name="LbSummoners" Margin="28,66,28,74" PreviewKeyDown="LbSummonersPreviewKeyDown" SelectionMode="Extended">
-            <ListBoxItem Content="DG Skhar"/>
-            <ListBoxItem Content="DG Space"/>
-            <ListBoxItem Content="DG Power of Hue"/>
-            <ListBoxItem Content="DG Odeio Toboco"/>
-            <ListBoxItem Content="DG nekocora"/>
-            <ListBoxItem Content="DG Wally"/>
-            <ListBoxItem Content="DG Darkness"/>
-            <ListBoxItem Content="DG Edge"/>
-            <ListBoxItem Content="DG mzi"/>
-            <ListBoxItem Content="DG Sampapito"/>
-            <ListBoxItem Content="DG Sarinha"/>
-            <ListBoxItem Content="DG Murphy"/>
-            <ListBoxItem Content="DG Zar"/>
-            <ListBoxItem Content="DG Hyukjae"/>
-            <ListBoxItem Content="DG Papillon001"/>
-            <ListBoxItem Content="DG Leonoak222"/>
-            <ListBoxItem Content="DG Sarinha"/>
-            <ListBoxItem Content="Minerva"/>
-            <ListBoxItem Content="4LaN"/>
-            <ListBoxItem Content="Aang1"/>
-            <ListBoxItem Content="Abnegação"/>
-            <ListBoxItem Content="Absolut209"/>
-            <ListBoxItem Content="AdC Alot"/>
-            <ListBoxItem Content="adc do autofill"/>
-            <ListBoxItem Content="Ahri Main"/>
-            <ListBoxItem Content="Akatsuki Mills"/>
-            <ListBoxItem Content="ALcT Top bosta"/>
-            <ListBoxItem Content="all hail haunter"/>
-            <ListBoxItem Content="andei trollando"/>
-            <ListBoxItem Content="Areksuu"/>
-            <ListBoxItem Content="astro"/>
-            <ListBoxItem Content="Avengerxs"/>
-            <ListBoxItem Content="Ayk"/>
-            <ListBoxItem Content="b g ô b"/>
-            <ListBoxItem Content="BabyMisty"/>
-            <ListBoxItem Content="Bd JooKeR"/>
-            <ListBoxItem Content="beast mid laner"/>
-            <ListBoxItem Content="BG Lenovo Rngr"/>
-            <ListBoxItem Content="BG Ranger"/>
-            <ListBoxItem Content="bigpepe"/>
-            <ListBoxItem Content="Bl4keouS"/>
-            <ListBoxItem Content="Blinkerino"/>
-            <ListBoxItem Content="boca no pico"/>
-            <ListBoxItem Content="BoIinhoDeArroz"/>
-            <ListBoxItem Content="BRAVE Brevot"/>
-            <ListBoxItem Content="BRAVE Cabuloso"/>
-            <ListBoxItem Content="BRAVE Sarkis"/>
-            <ListBoxItem Content="BRAVE Thulz"/>
-            <ListBoxItem Content="brtw amorzinho"/>
-        </ListBox>
+        <ListBox x:Name="LbSummoners" Margin="28,66,28,74" PreviewKeyDown="LbSummonersPreviewKeyDown" SelectionMode="Extended"/>
         <Grid Margin="28,0,28,26" Height="43" VerticalAlignment="Bottom">
-            <ProgressBar Name="PbStatus" Minimum="0" Maximum="100"/>
+            <ProgressBar Name="PbStatus" Minimum="0" Maximum="100" MouseDoubleClick="PbStatus_MouseDoubleClick"/>
             <TextBlock Name="TbStatus" Text="" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
         </Grid>
     </Grid>
