@@ -4,9 +4,11 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Input;
 using RiotApi.Net.RestClient;
 using RiotApi.Net.RestClient.Configuration;
@@ -14,6 +16,9 @@ using RiotApi.Net.RestClient.Dto.CurrentGame;
 using RiotApi.Net.RestClient.Dto.LolStaticData.Champion;
 using RiotApi.Net.RestClient.Dto.Summoner;
 using RiotApi.Net.RestClient.Helpers;
+using Cursors = System.Windows.Input.Cursors;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using MessageBox = System.Windows.MessageBox;
 using Timer = System.Timers.Timer;
 
 namespace SummonerTracker
@@ -28,15 +33,16 @@ namespace SummonerTracker
             InitializeComponent();
             //Inicializa();
 
-            //NotifyIcon.DoubleClick += (sender, args) =>
-            //{
-            //    Show();
-            //    WindowState = WindowState.Normal;
-            //};
-            //Closing += (sender, args) =>
-            //{
-            //    NotifyIcon.Visible = false;
-            //};
+            NotifyIcon.DoubleClick += (sender, args) =>
+            {
+                Show();
+                NotifyIcon.Visible = false;
+                WindowState = WindowState.Normal;
+            };
+            Closing += (sender, args) =>
+            {
+                NotifyIcon.Visible = false;
+            };
 
             //31c4ded7-3de9-423e-bdbf-7fd6665e011b
             RiotKey = ConfigurationManager.AppSettings["RiotKey"];
@@ -134,6 +140,7 @@ namespace SummonerTracker
         {
             if (WindowState == WindowState.Minimized)
             {
+                NotifyIcon.Visible = true;
                 Hide();
             }
 
@@ -155,11 +162,12 @@ namespace SummonerTracker
         /// <summary>
         /// Ícone de notificação na tray.
         /// </summary>
-        //public NotifyIcon NotifyIcon { get; } = new NotifyIcon
-        //{
-        //    Icon = System.Drawing.Icon.ExtractAssociatedIcon(Assembly.GetEntryAssembly().ManifestModule.Name),
-        //    Visible = true
-        //};
+        public NotifyIcon NotifyIcon { get; } = new NotifyIcon
+        {
+            Icon = System.Drawing.Icon.ExtractAssociatedIcon(Assembly.GetEntryAssembly().ManifestModule.Name),
+            Text = "SummonerTracker",
+            Visible = false
+        };
 
         //private IEnumerable<string> _summonerNames;
         ///// <summary>
