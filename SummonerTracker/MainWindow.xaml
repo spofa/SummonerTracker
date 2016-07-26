@@ -27,6 +27,38 @@
             <ListBoxItem Content="DG Papillon001"/>
             <ListBoxItem Content="DG Leonoak222"/>
             <ListBoxItem Content="DG Sarinha"/>
+            <ListBoxItem Content="Minerva"/>
+            <ListBoxItem Content="4LaN"/>
+            <ListBoxItem Content="Aang1"/>
+            <ListBoxItem Content="Abnegação"/>
+            <ListBoxItem Content="Absolut209"/>
+            <ListBoxItem Content="AdC Alot"/>
+            <ListBoxItem Content="adc do autofill"/>
+            <ListBoxItem Content="Ahri Main"/>
+            <ListBoxItem Content="Akatsuki Mills"/>
+            <ListBoxItem Content="ALcT Top bosta"/>
+            <ListBoxItem Content="all hail haunter"/>
+            <ListBoxItem Content="andei trollando"/>
+            <ListBoxItem Content="Areksuu"/>
+            <ListBoxItem Content="astro"/>
+            <ListBoxItem Content="Avengerxs"/>
+            <ListBoxItem Content="Ayk"/>
+            <ListBoxItem Content="b g ô b"/>
+            <ListBoxItem Content="BabyMisty"/>
+            <ListBoxItem Content="Bd JooKeR"/>
+            <ListBoxItem Content="beast mid laner"/>
+            <ListBoxItem Content="BG Lenovo Rngr"/>
+            <ListBoxItem Content="BG Ranger"/>
+            <ListBoxItem Content="bigpepe"/>
+            <ListBoxItem Content="Bl4keouS"/>
+            <ListBoxItem Content="Blinkerino"/>
+            <ListBoxItem Content="boca no pico"/>
+            <ListBoxItem Content="BoIinhoDeArroz"/>
+            <ListBoxItem Content="BRAVE Brevot"/>
+            <ListBoxItem Content="BRAVE Cabuloso"/>
+            <ListBoxItem Content="BRAVE Sarkis"/>
+            <ListBoxItem Content="BRAVE Thulz"/>
+            <ListBoxItem Content="brtw amorzinho"/>
         </ListBox>
         <Grid Margin="28,0,28,26" Height="43" VerticalAlignment="Bottom">
             <ProgressBar Name="PbStatus" Minimum="0" Maximum="100"/>

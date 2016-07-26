@@ -7,7 +7,7 @@ namespace SummonerTracker
 {
     public partial class ToastWindow
     {
-        private const string APP_ID = "Microsoft.Samples.DesktopToastsSample";
+        private const string APP_ID = "SummonerTracker";
         public ToastWindow()
         {
             InitializeComponent();
@@ -18,9 +18,8 @@ namespace SummonerTracker
         // See the "Toasts" sample for more detail on what can be done with toasts
         private void ShowToastButton_Click(object sender, RoutedEventArgs e)
         {
-
             // Get a toast XML template
-            XmlDocument toastXml = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastImageAndText04);
+            XmlDocument toastXml = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText03);
 
             // Fill in the text elements
             XmlNodeList stringElements = toastXml.GetElementsByTagName("text");
@@ -28,11 +27,6 @@ namespace SummonerTracker
             {
                 stringElements[i].AppendChild(toastXml.CreateTextNode("Line " + i));
             }
-
-            // Specify the absolute path to an image
-            //String imagePath = "file:///" + Path.GetFullPath("toastImageAndText.png");
-            //XmlNodeList imageElements = toastXml.GetElementsByTagName("image");
-            //imageElements[0].Attributes.GetNamedItem("src").NodeValue = imagePath;
 
             // Create the toast and attach event listeners
             ToastNotification toast = new ToastNotification(toastXml);

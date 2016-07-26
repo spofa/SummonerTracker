@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
+using Windows.UI.Notifications;
 using RiotApi.Net.RestClient;
 using RiotApi.Net.RestClient.Configuration;
 using RiotApi.Net.RestClient.Dto.CurrentGame;
@@ -51,18 +52,26 @@ namespace SummonerTracker
                 MessageBox.Show("Riot API key not found.");
                 Close();
             }
+            else if (RiotKey.Equals("API_KEY"))
+            {
+                RiotKey = "31c4ded7-3de9-423e-bdbf-7fd6665e011b";
+            }
 
             //01e7b9c9dcc343f595d86c2517710e9f
             PushalotKey = ConfigurationManager.AppSettings["PushalotKey"];
-            if (string.IsNullOrEmpty(PushalotKey))
-            {
-                MessageBox.Show("Pushalot API key not found.");
-                Close();
-            }
+            //if (string.IsNullOrEmpty(PushalotKey))
+            //{
+            //    MessageBox.Show("Pushalot API key not found.");
+            //    Close();
+            //}
+            //else if(PushalotKey.Equals("API_KEY"))
+            //{
+            //    PushalotKey = "01e7b9c9dcc343f595d86c2517710e9f";
+            //}
 
             //Controle de limite de requests
-            LimitRate(TimeSpan.FromSeconds(10), 10); //10 requests every 10 seconds
-            LimitRate(TimeSpan.FromMinutes(10), 500); //500 requests every 10 minutes
+            LimitRate(TimeSpan.FromSeconds(15), 10); //10 requests every 10 seconds
+            LimitRate(TimeSpan.FromMinutes(12), 500); //500 requests every 10 minutes
 
             List<string> names = new List<string>();
             foreach (ListBoxItem name in LbSummoners.Items)
@@ -225,6 +234,7 @@ namespace SummonerTracker
         //});
 
         private IRiotClient _riotClient;
+
         /// <summary>
         /// Controle da API da Riot
         /// </summary>
@@ -441,18 +451,7 @@ namespace SummonerTracker
                             continue;
                         }
 
-                        using (WebClient client = new WebClient())
-                        {
-                            NameValueCollection values = new NameValueCollection
-                            {
-                                ["AuthorizationToken"] = PushalotKey,
-                                ["Body"] =
-                                    $"{sum.Name} is playing as {GetChampion(cg.Participants.Single(c => c.SummonerId == sum.Id).ChampionId).Name}."
-                            };
-
-                            // client.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
-                            client.UploadValues("https://pushalot.com/api/sendmessage", values);
-                        }
+                        Notify($"{sum.Name} is playing as {GetChampion(cg.Participants.Single(c => c.SummonerId == sum.Id).ChampionId).Name}.");
                     }
                 }
                 finally
@@ -466,6 +465,28 @@ namespace SummonerTracker
                     });
                 }
             }).Start();
+        }
+
+        private void Notify(string notificationText)
+        {
+            if (string.IsNullOrEmpty(PushalotKey) || PushalotKey.Equals("API_KEY"))
+            {
+                ToastGenerator.Instance.ShowToast(ToastTemplateType.ToastText01, notificationText);
+            }
+            else
+            {
+                using (WebClient client = new WebClient())
+                {
+                    NameValueCollection values = new NameValueCollection
+                    {
+                        ["AuthorizationToken"] = PushalotKey,
+                        ["Body"] = notificationText
+                    };
+
+                    // client.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
+                    client.UploadValues("https://pushalot.com/api/sendmessage", values);
+                }
+            }
         }
 
         private void LbSummonersPreviewKeyDown(object sender, KeyEventArgs e)
