@@ -101,18 +101,18 @@ namespace SummonerTracker
         private string RiotKey { get; }
         private string PushalotKey { get; }
 
-        private Timer _timer;
+        private Timer _updateTimer;
         /// <summary>
         /// Timer para controle da próxima atualização
         /// </summary>
-        private Timer Timer
+        private Timer UpdateTimer
         {
             get
             {
-                if (_timer == null)
+                if (_updateTimer == null)
                 {
-                    _timer = new Timer {Interval = RefreshTime};
-                    _timer.Elapsed += (sender, args) =>
+                    _updateTimer = new Timer {Interval = RefreshTime};
+                    _updateTimer.Elapsed += (sender, args) =>
                     {
                         Dispatcher.Invoke(() =>
                         {
@@ -123,7 +123,7 @@ namespace SummonerTracker
                         });
                     };
                 }
-                return _timer;
+                return _updateTimer;
             }
         }
 
@@ -445,7 +445,7 @@ namespace SummonerTracker
             {
                 Dispatcher.Invoke(() =>
                 {
-                    Timer.Stop();
+                    UpdateTimer.Stop();
                     IsUpdating = true;
                     TbStatus.Text = "Updating...";
                     PbStatus.IsIndeterminate = true;
@@ -477,7 +477,7 @@ namespace SummonerTracker
                         Cursor = Cursors.Arrow;
                         PbStatus.IsIndeterminate = false;
                         IsUpdating = false;
-                        Timer.Start();
+                        UpdateTimer.Start();
                     });
                 }
             }) {IsBackground = true}.Start();
