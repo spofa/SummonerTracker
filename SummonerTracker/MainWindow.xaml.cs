@@ -458,7 +458,9 @@ namespace SummonerTracker
                         CurrentGameInfo cg;
                         try
                         {
-                            cg = RiotClient.CurrentGame.GetCurrentGameInformationForSummonerId(RiotApiConfig.Platforms.BR1, sum.Id);
+                            cg =
+                                RiotClient.CurrentGame.GetCurrentGameInformationForSummonerId(
+                                    RiotApiConfig.Platforms.BR1, sum.Id);
                         }
                         catch (RiotExceptionRaiser.RiotApiException)
                         {
@@ -478,7 +480,7 @@ namespace SummonerTracker
                         Timer.Start();
                     });
                 }
-            }).Start();
+            }) {IsBackground = true}.Start();
         }
 
         private void Notify(string notificationText)
