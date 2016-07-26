@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Windows.UI.Notifications;
 using RiotApi.Net.RestClient;
 using RiotApi.Net.RestClient.Configuration;
@@ -17,6 +18,7 @@ using RiotApi.Net.RestClient.Dto.CurrentGame;
 using RiotApi.Net.RestClient.Dto.LolStaticData.Champion;
 using RiotApi.Net.RestClient.Dto.Summoner;
 using RiotApi.Net.RestClient.Helpers;
+using Brushes = System.Windows.Media.Brushes;
 using Cursors = System.Windows.Input.Cursors;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
@@ -75,27 +77,32 @@ namespace SummonerTracker
             }
 
             //Controle de limite de requests
-            LimitRate(TimeSpan.FromSeconds(15), 10); //10 requests every 10 seconds
+            LimitRate(TimeSpan.FromSeconds(15), 2); //10 requests every 10 seconds
             LimitRate(TimeSpan.FromMinutes(12), 500); //500 requests every 10 minutes
-
-            List<string> names = new List<string>();
-            foreach (ListBoxItem name in LbSummoners.Items)
-            {
-                names.Add(name.Content.ToString());
-                if (names.Count == 40)
-                {
-                    GetSummoners(names.ToArray());
-                    names.Clear();
-                }
-            }
-            if (names.Any())
-            {
-                GetSummoners(names.ToArray());
-            }
 
             PbStatus.Maximum = TimeSpan.FromMinutes(UpdateTime).TotalMilliseconds;
             TbName.Focus();
-            Update();
+
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+            {
+                //Load Summoner information
+                List<string> names = new List<string>();
+                foreach (ListBoxItem name in LbSummoners.Items)
+                {
+                    names.Add(name.Content.ToString());
+                    if (names.Count == 40)
+                    {
+                        GetSummoners(names.ToArray());
+                        names.Clear();
+                    }
+                }
+                if (names.Any())
+                {
+                    GetSummoners(names.ToArray());
+                }
+
+                Update();
+            }));
         }
 
         private string RiotKey { get; }
@@ -136,7 +143,7 @@ namespace SummonerTracker
             NextUpdate = TimeSpan.FromMinutes(UpdateTime);
         }
 
-        private static double UpdateTime => 5;
+        private static double UpdateTime => 0.3;
         private static double RefreshTime => 100; 
 
         private TimeSpan _nextUpdate = TimeSpan.FromMinutes(UpdateTime);
@@ -156,8 +163,8 @@ namespace SummonerTracker
                     PbStatus.Value = TimeSpan.FromMinutes(UpdateTime).TotalMilliseconds - NextUpdate.TotalMilliseconds;
                     if (oldSpan.Seconds != NextUpdate.Seconds)
                     {
-                        //TbStatus.Text = $"Time to next update: {NextUpdate.Add(TimeSpan.FromSeconds(1)).ToString(@"mm\:ss")}";
-                        TbStatus.Text = $"Time to next update: {NextUpdate.ToString(@"mm\:ss")}";
+                        TbStatus.Text = $"Time to next update: {NextUpdate.Add(TimeSpan.FromSeconds(1)).ToString(@"mm\:ss")}";
+                        //TbStatus.Text = $"Time to next update: {NextUpdate.ToString(@"mm\:ss")}";
                     }
                 }
             }
@@ -259,14 +266,23 @@ namespace SummonerTracker
                 foreach (var pair in RateLimits)
                 {
                     RequestRate[pair.Key]++;
-                    while (RequestRate[pair.Key] >= pair.Value)
+                    if (RequestRate[pair.Key] >= pair.Value)
                     {
-                        Thread.Sleep(1000);
+                        Dispatcher.Invoke(() => PbStatus.Foreground = Brushes.Red);
+                        EventWaitHandle.WaitOne();
+                        Dispatcher.Invoke(() => PbStatus.Foreground = Brushes.Green);
                     }
+                    //while (RequestRate[pair.Key] >= pair.Value)
+                    //{
+                    //    Thread.Sleep(1000);
+                    //}
                 }
                 return _riotClient ?? (_riotClient = new RiotClient(RiotKey));
             }
         }
+
+        private EventWaitHandle _eventWaitHandle;
+        private EventWaitHandle EventWaitHandle => _eventWaitHandle ?? (_eventWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset));
 
         /// <summary>
         /// Cria um novo limite para requisições e inicia um timer para controle.
@@ -279,6 +295,7 @@ namespace SummonerTracker
             timer.Elapsed += (sender, args) =>
             {
                 RequestRate[timeSpan] = 0;
+                EventWaitHandle.Set();
             };
             timer.Start();
         }
@@ -458,9 +475,7 @@ namespace SummonerTracker
                         CurrentGameInfo cg;
                         try
                         {
-                            cg =
-                                RiotClient.CurrentGame.GetCurrentGameInformationForSummonerId(
-                                    RiotApiConfig.Platforms.BR1, sum.Id);
+                            cg = RiotClient.CurrentGame.GetCurrentGameInformationForSummonerId(RiotApiConfig.Platforms.BR1, sum.Id);
                         }
                         catch (RiotExceptionRaiser.RiotApiException)
                         {
@@ -480,7 +495,7 @@ namespace SummonerTracker
                         UpdateTimer.Start();
                     });
                 }
-            }) {IsBackground = true}.Start();
+            }) {IsBackground = true, Name = "Update Thread"}.Start();
         }
 
         private void Notify(string notificationText)
