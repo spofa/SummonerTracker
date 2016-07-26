@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
 using RiotApi.Net.RestClient;
 using RiotApi.Net.RestClient.Configuration;
 using RiotApi.Net.RestClient.Dto.CurrentGame;
@@ -52,10 +52,9 @@ namespace SummonerTracker
                 GetSummoners(names.ToArray());
             }
 
-            //Update();
-            PbStatus.Maximum = TimeSpan.FromMinutes(UpdateTime).TotalMilliseconds;           
-            Timer.Start();
+            PbStatus.Maximum = TimeSpan.FromMinutes(UpdateTime).TotalMilliseconds;
             TbName.Focus();
+            Update();
         }
 
         private Timer _timer;
@@ -65,10 +64,7 @@ namespace SummonerTracker
             {
                 if (_timer == null)
                 {
-                    _timer = new Timer
-                    {
-                        Interval = RefreshTime // 1 second updates
-                    };
+                    _timer = new Timer {Interval = RefreshTime};
                     _timer.Elapsed += (sender, args) =>
                     {
                         Dispatcher.Invoke(() =>
@@ -85,7 +81,7 @@ namespace SummonerTracker
             }
         }
 
-        private static double UpdateTime => 0.25;
+        private static double UpdateTime => 0.1;
         private static double RefreshTime => 100; 
 
         private TimeSpan _nextUpdate = TimeSpan.FromMinutes(UpdateTime);
@@ -105,7 +101,7 @@ namespace SummonerTracker
                     PbStatus.Value = TimeSpan.FromMinutes(UpdateTime).TotalMilliseconds - NextUpdate.TotalMilliseconds;
                     if (oldSpan.Seconds != NextUpdate.Seconds)
                     {
-                        TbStatus.Text = $"Time to update: {NextUpdate.ToString(@"mm\:ss")}";
+                        TbStatus.Text = $"Time to next update: {NextUpdate.Add(TimeSpan.FromSeconds(1)).ToString(@"mm\:ss")}";
                     }
                 }
             }
@@ -345,50 +341,58 @@ namespace SummonerTracker
                 return;
             }
 
-            Timer.Stop();
-            IsUpdating = true;
-            TbStatus.Text = "Updating...";
-            PbStatus.IsIndeterminate = true;
-            Cursor = Cursors.Wait;
-            Dispatcher.PushFrame(new DispatcherFrame(true));
-            try
+            new Thread(() =>
             {
-                foreach (SummonerDto sum in Summoners)
+                Dispatcher.Invoke(() =>
                 {
-                    CurrentGameInfo cg;
-                    try
+                    Timer.Stop();
+                    IsUpdating = true;
+                    TbStatus.Text = "Updating...";
+                    PbStatus.IsIndeterminate = true;
+                    Cursor = Cursors.Wait;
+                });
+                try
+                {
+                    foreach (SummonerDto sum in Summoners)
                     {
-                        cg = RiotClient.CurrentGame.GetCurrentGameInformationForSummonerId(RiotApiConfig.Platforms.BR1, sum.Id);
-                    }
-                    catch (RiotExceptionRaiser.RiotApiException)
-                    {
-                        continue;
-                    }
-
-                    using (WebClient client = new WebClient())
-                    {
-                        NameValueCollection values = new NameValueCollection
+                        CurrentGameInfo cg;
+                        try
                         {
-                            ["AuthorizationToken"] = "01e7b9c9dcc343f595d86c2517710e9f",
-                            ["Body"] = $"{sum.Name} is playing as {GetChampion(cg.Participants.Single(c => c.SummonerId == sum.Id).ChampionId).Name}."
-                        };
+                            cg = RiotClient.CurrentGame.GetCurrentGameInformationForSummonerId(RiotApiConfig.Platforms.BR1, sum.Id);
+                        }
+                        catch (RiotExceptionRaiser.RiotApiException)
+                        {
+                            continue;
+                        }
 
-                        // client.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
-                        client.UploadValues("https://pushalot.com/api/sendmessage", values);
+                        using (WebClient client = new WebClient())
+                        {
+                            NameValueCollection values = new NameValueCollection
+                            {
+                                ["AuthorizationToken"] = "01e7b9c9dcc343f595d86c2517710e9f",
+                                ["Body"] =
+                                    $"{sum.Name} is playing as {GetChampion(cg.Participants.Single(c => c.SummonerId == sum.Id).ChampionId).Name}."
+                            };
+
+                            // client.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
+                            client.UploadValues("https://pushalot.com/api/sendmessage", values);
+                        }
                     }
                 }
-            }
-            finally
-            {
-                Cursor = Cursors.Arrow;
-                PbStatus.IsIndeterminate = false;
-                IsUpdating = false;
-                Dispatcher.PushFrame(new DispatcherFrame(true));
-                Timer.Start();
-            }
+                finally
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        Cursor = Cursors.Arrow;
+                        PbStatus.IsIndeterminate = false;
+                        IsUpdating = false;
+                        Timer.Start();
+                    });
+                }
+            }).Start();
         }
 
-        private void listBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void LbSummonersPreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Delete)
             {

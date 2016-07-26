@@ -9,8 +9,8 @@
         <TextBlock x:Name="TbTitle" HorizontalAlignment="Left" Margin="28,17,0,0" TextWrapping="Wrap" Text="Summoner name" VerticalAlignment="Top" FontWeight="Bold"/>
         <TextBox x:Name="TbName" VerticalContentAlignment="Center" Height="23" Margin="28,38,100,0" TextWrapping="Wrap" VerticalAlignment="Top" PreviewKeyDown="TbName_PreviewKeyDown"/>
         <Button x:Name="BtAdd" Content="Add" Margin="0,38,28,0" Height="23" VerticalAlignment="Top" HorizontalAlignment="Right" Width="67" Click="button_Click"/>
-        <ListBox x:Name="LbSummoners" Margin="28,66,28,74" PreviewKeyDown="listBox_PreviewKeyDown" SelectionMode="Extended">
-            <!--<ListBoxItem Content="DG Skhar"/>
+        <ListBox x:Name="LbSummoners" Margin="28,66,28,74" PreviewKeyDown="LbSummonersPreviewKeyDown" SelectionMode="Extended">
+            <ListBoxItem Content="DG Skhar"/>
             <ListBoxItem Content="DG Space"/>
             <ListBoxItem Content="DG Power of Hue"/>
             <ListBoxItem Content="DG Odeio Toboco"/>
@@ -25,7 +25,7 @@
             <ListBoxItem Content="DG Zar"/>
             <ListBoxItem Content="DG Hyukjae"/>
             <ListBoxItem Content="DG Papillon001"/>
-            <ListBoxItem Content="DG Leonoak222"/>-->
+            <ListBoxItem Content="DG Leonoak222"/>
             <ListBoxItem Content="DG Sarinha"/>
         </ListBox>
         <Grid Margin="28,0,28,26" Height="43" VerticalAlignment="Bottom">
