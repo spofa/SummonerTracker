@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -37,6 +38,22 @@ namespace SummonerTracker
             //    NotifyIcon.Visible = false;
             //};
 
+            //31c4ded7-3de9-423e-bdbf-7fd6665e011b
+            RiotKey = ConfigurationManager.AppSettings["RiotKey"];
+            if (string.IsNullOrEmpty(RiotKey))
+            {
+                MessageBox.Show("Riot API key not found.");
+                Close();
+            }
+
+            //01e7b9c9dcc343f595d86c2517710e9f
+            PushalotKey = ConfigurationManager.AppSettings["PushalotKey"];
+            if (string.IsNullOrEmpty(PushalotKey))
+            {
+                MessageBox.Show("Pushalot API key not found.");
+                Close();
+            }
+
             List<string> names = new List<string>();
             foreach (ListBoxItem name in LbSummoners.Items)
             {
@@ -57,7 +74,13 @@ namespace SummonerTracker
             Update();
         }
 
+        private string RiotKey { get; }
+        private string PushalotKey { get; }
+
         private Timer _timer;
+        /// <summary>
+        /// Timer para controle da próxima atualização
+        /// </summary>
         private Timer Timer
         {
             get
@@ -81,7 +104,7 @@ namespace SummonerTracker
             }
         }
 
-        private static double UpdateTime => 0.1;
+        private static double UpdateTime => 5;
         private static double RefreshTime => 100; 
 
         private TimeSpan _nextUpdate = TimeSpan.FromMinutes(UpdateTime);
@@ -193,7 +216,7 @@ namespace SummonerTracker
         /// <summary>
         /// Controle da API da Riot
         /// </summary>
-        private IRiotClient RiotClient => _riotClient ?? (_riotClient = new RiotClient("31c4ded7-3de9-423e-bdbf-7fd6665e011b"));
+        private IRiotClient RiotClient => _riotClient ?? (_riotClient = new RiotClient(RiotKey));
 
         /// <summary>
         /// Busca as informações para a lista de Summoners
@@ -369,7 +392,7 @@ namespace SummonerTracker
                         {
                             NameValueCollection values = new NameValueCollection
                             {
-                                ["AuthorizationToken"] = "01e7b9c9dcc343f595d86c2517710e9f",
+                                ["AuthorizationToken"] = PushalotKey,
                                 ["Body"] =
                                     $"{sum.Name} is playing as {GetChampion(cg.Participants.Single(c => c.SummonerId == sum.Id).ChampionId).Name}."
                             };
