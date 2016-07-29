@@ -11,8 +11,11 @@
         <Button x:Name="BtAdd" Content="Add" Margin="0,38,28,0" Height="23" VerticalAlignment="Top" HorizontalAlignment="Right" Width="67" Click="button_Click"/>
         <ListBox x:Name="LbSummoners" Margin="28,66,28,74" PreviewKeyDown="LbSummonersPreviewKeyDown" SelectionMode="Extended"/>
         <Grid Margin="28,0,28,26" Height="43" VerticalAlignment="Bottom">
-            <ProgressBar Name="PbStatus" Minimum="0" Maximum="100" MouseDoubleClick="PbStatus_MouseDoubleClick"/>
-            <TextBlock Name="TbStatus" Text="" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+            <ProgressBar Name="PbStatus" Minimum="0" Maximum="100" MouseDoubleClick="PbStatus_MouseDoubleClick" IsIndeterminate="True"/>
+            <TextBlock Name="TbStatus" Text="Updating..." HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
         </Grid>
+        <!--<TextBlock x:Name="TbLimit" TextWrapping="Wrap" Text="" Margin="0,0,136,5" HorizontalAlignment="Right" Width="49" Height="16" VerticalAlignment="Bottom"/>
+        <TextBlock x:Name="TbRate" TextWrapping="Wrap" Text="" Margin="0,0,82,5" HorizontalAlignment="Right" Width="49" Height="16" VerticalAlignment="Bottom"/>
+        <TextBlock x:Name="TbValue" TextWrapping="Wrap" Text="" Margin="0,0,28,5" HorizontalAlignment="Right" Width="49" Height="16" VerticalAlignment="Bottom"/>-->
     </Grid>
 </Window>

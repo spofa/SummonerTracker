@@ -10,15 +10,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Threading;
-using Windows.UI.Notifications;
 using RiotApi.Net.RestClient;
 using RiotApi.Net.RestClient.Configuration;
 using RiotApi.Net.RestClient.Dto.CurrentGame;
 using RiotApi.Net.RestClient.Dto.LolStaticData.Champion;
 using RiotApi.Net.RestClient.Dto.Summoner;
 using RiotApi.Net.RestClient.Helpers;
-using Brushes = System.Windows.Media.Brushes;
 using Cursors = System.Windows.Input.Cursors;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
@@ -73,37 +70,25 @@ namespace SummonerTracker
 
             foreach (string s in ConfigurationManager.AppSettings["Summoners"].Split('|'))
             {
-                LbSummoners.Items.Add(new ListBoxItem { Content = s });
+                if (LbSummoners.Items.OfType<ListBoxItem>().Any(it => it.Content.Equals(s)))
+                {
+                    continue;
+                }
+                LbSummoners.Items.Add(new ListBoxItem {Content = s});
             }
 
             //Controle de limite de requests
-            LimitRate(TimeSpan.FromSeconds(15), 2); //10 requests every 10 seconds
+            LimitRate(TimeSpan.FromSeconds(15), 10); //10 requests every 10 seconds
             LimitRate(TimeSpan.FromMinutes(12), 500); //500 requests every 10 minutes
 
             PbStatus.Maximum = TimeSpan.FromMinutes(UpdateTime).TotalMilliseconds;
             TbName.Focus();
 
-            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
-            {
-                //Load Summoner information
-                List<string> names = new List<string>();
-                foreach (ListBoxItem name in LbSummoners.Items)
-                {
-                    names.Add(name.Content.ToString());
-                    if (names.Count == 40)
-                    {
-                        GetSummoners(names.ToArray());
-                        names.Clear();
-                    }
-                }
-                if (names.Any())
-                {
-                    GetSummoners(names.ToArray());
-                }
-
-                Update();
-            }));
+            DataVersion = RiotClient.LolStaticData.GetVersionData(RiotApiConfig.Regions.BR).First();
+            Update();
         }
+
+        private string DataVersion { get; }
 
         private string RiotKey { get; }
         private string PushalotKey { get; }
@@ -125,7 +110,7 @@ namespace SummonerTracker
                         {
                             if ((NextUpdate = NextUpdate.Subtract(TimeSpan.FromMilliseconds(RefreshTime))) == TimeSpan.Zero)
                             {
-                                UpdateResetTimer();
+                                UpdateAndResetTimer();
                             }
                         });
                     };
@@ -137,14 +122,15 @@ namespace SummonerTracker
         /// <summary>
         /// Realiza o update e reseta o timer para a próxima atualização.
         /// </summary>
-        private void UpdateResetTimer()
+        private void UpdateAndResetTimer()
         {
             Update();
             NextUpdate = TimeSpan.FromMinutes(UpdateTime);
         }
 
         private static double UpdateTime => 0.3;
-        private static double RefreshTime => 100; 
+        private static double RefreshTime => 100;
+        //private static int RequestRateValue { get; set; }
 
         private TimeSpan _nextUpdate = TimeSpan.FromMinutes(UpdateTime);
 
@@ -203,57 +189,6 @@ namespace SummonerTracker
             Visible = false
         };
 
-        //private IEnumerable<string> _summonerNames;
-        ///// <summary>
-        ///// Conjunto de nomes para pesquisa
-        ///// </summary>
-        //private IEnumerable<string> SummonerNames => _summonerNames ?? (_summonerNames = new[]
-        //{
-        //    "DG Skhar", "DG Space", "DG Power of Hue", "DG Odeio Toboco", "DG nekocora", "DG Wally", "DG Darkness", "DG Edge", "DG mzi", "DG Sampapito",
-        //    "DG Sarinha", "DG Murphy", "DG Zar", "DG Hyukjae", "DG Papillon001", "DG Leonoak222"
-        //    //"DG Skhar", "16 Tons de ADC",
-        //    //"4LaN", "Aang1", "Abnegação", "Absolut209", "AdC Alot", "adc do autofill", "Ahri Main",
-        //    //"Akatsuki Mills", "ALcT Top bosta", "all hail haunter", "andei trollando", "Areksuu", "astro",
-        //    //"Avengerxs", "Ayk", "b g ô b", "BabyMisty", "Bd JooKeR", "beast mid laner", "BG Lenovo Rngr",
-        //    //"BG Ranger", "bigpepe", "Bl4keouS", "Blinkerino", "boca no pico", "BoIinhoDeArroz",
-        //    //"BRAVE Brevot", "BRAVE Cabuloso", "BRAVE Sarkis", "BRAVE Thulz", "brtw amorzinho",
-        //    //"Cara Inteligente", "Carioca HOKAGE", "Caôs", "Chaser", "chavoso triste", "ChungHingSamLam",
-        //    //"CITCRA SYEKNOM", "Cleyton Coxinha", "Cloyster DISNEY", "CNB HyperX Codpc", "CNB HyperX Deki",
-        //    //"CNB HyperX Devo", "CNB HyperX Shy", "CNB HyperX Spek", "CNB HyperX Wos", "CNB HyperX Yampi",
-        //    //"Codpiece", "Crywulf", "cute girI", "Céoszinho", "danmf", "danz0r408", "Darwin the fish",
-        //    //"Days4fun", "Derick6", "Devios Sarrador", "devo boy", "DJ DlEGO", "dory a peixa azu",
-        //    //"eChamp Dudao", "eChamp k0ga", "eChamp Krastyel", "EDG Awesome", "elf lvl 99", "Emp1rean",
-        //    //"Envyyy", "Epilef safadão", "ESC Ever Tempt", "EzPrince", "FEBlVEN", "ferchu triste",
-        //    //"fightingforlove", "FinalDeath", "FleekzKux", "fNbê", "Forget me", "Foxziim", "Frango Úmido",
-        //    //"Fred O Temido", "Freedom2", "FREEKR", "FS Pinguin", "Gentha", "Glkko", "gofer", "Gonto1",
-        //    //"Herminoso", "Hide on pussie", "Hit My Heart", "Holthedoor", "Hy0g4", "Hyrrokin",
-        //    //"I AM BIXA Q BATE", "i wanna jungle", "IDM EzPrince", "IDM Fire", "IGUIN MANEIRIN", "im cheed",
-        //    //"imabeast", "INTZ aC AlexKiD", "INTZ aC Goro", "INTZ Yang1", "ISG Newbie", "Its Me FraGioRlz",
-        //    //"JAO DA MAIONESE", "jojothekiler", "Josh Dun", "JudenkiJuzo", "Jukes", "justt a sad guy",
-        //    //"Juzinho", "Kales Myth", "kazhinzin", "KBM Zuao", "Kier", "KLG Julio", "Korea do Sertão",
-        //    //"KsImorTal", "KTCHORO D KONOHA", "KTCHORO O WUKÓNG", "KTG Erasus", "KTG Kveeykva", "KTG xanad0",
-        //    //"Kuroo", "kyolols", "L Watch", "leo1 aka boss", "Lesbian", "LGD Handsome", "lllllIIIll",
-        //    //"lllllllIIIlll", "Loopi", "Luciana Genro", "LUSKKÃO", "Luuuuuuuuuukz", "Léozin1", "Lêozuxo",
-        //    //"MANTEGA NA TEGA", "Marta Fogueteira", "Matsukaze", "MC DYNQUEDO", "Mechanics",
-        //    //"Melhor do Prédio", "Minerva", "Mr Magician", "MrSuicideeSheep", "Mudkiipz", "MuShiBaS",
-        //    //"Nemesis Hydro", "Nemozeiro", "Nice SoloQ Guy", "Ninja28", "nothing1", "Nyu", "Náru ",
-        //    //"O Famoso Maso", "oBz Freddao", "OCK HBee", "Oh well", "OKG Wise Titan", "OPK Goku",
-        //    //"OPK Professor", "OPK Skyerr", "paiN jÚc", "paiN KamiKat", "paiN TaeYeon", "PARARA TINBUM",
-        //    //"PEDASO DE GATO", "Pequeno Asiatico", "Pichau Atlanta", "Pichau Leffer", "Pichau Paz",
-        //    //"Pidgeot DISNEY ", "PNG Rakin1", "POLÃO", "Primoo S2 Mel", "q bom cara", "QR PÃO QUENTINHO",
-        //    //"Rakyz", "Ranai", "RBT LG MANTARRAY", "RBT LG Slow", "RBT LG Zeypher", "RED Eryon", "RED SacyR",
-        //    //"RelLucian", "Rey SkywaIker", "Rhydor", "Ricardownage", "rivAbene", "Robs", "Roex",
-        //    //"ruan1 aka boss", "Satamonio", "sdkjaslkd1lulxd", "Sea Engineer", "SesshabecomoÉ", "SESSHODIA",
-        //    //"Skeezy", "skt marinjuana", "Skyér", "snitnaZ", "Souaisei Riron ", "Stand Aside", "Stressado",
-        //    //"Style o Genji", "Supp Me Carry U", "SuranoAscension", "Tadashl", "Tecnosh1", "The tp guy",
-        //    //"TheMid itself", "tinowns2", "tinowns3", "Tio Sessh", "Tirano Otakinhu", "tomate1", "TomnaM",
-        //    //"too many daddies", "TOOOLDFORLEAGUE", "TopOnSemMid", "Traitor", "UnderSky", "Uriinho",
-        //    //"URUSAI URUSAI", "Vampyrus", "Van Joune", "VANESSA TRAVESSA", "VFK esinhA", "VFK Robo",
-        //    //"Victinz", "Vinhemo", "Vini a Riven", "Volponi Senpai", "vVvert", "Warm Whispers", "Wild Pig",
-        //    //"Wintero", "xObliverator", "YGÃO MANEIRÃO", "you even trying", "Zantins", "zAvenger", "Zelgius",
-        //    //"ZeícrO", "Zuaozito", "zxcvbnm", "Émp"
-        //});
-
         private IRiotClient _riotClient;
 
         /// <summary>
@@ -265,37 +200,34 @@ namespace SummonerTracker
             {
                 foreach (var pair in RateLimits)
                 {
+                    //RequestRateValue++;
+                    //Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() => TbValue.Text = RequestRateValue.ToString()));
+                    //Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() => TbRate.Text = RequestRate[pair.Key].ToString()));
+                    //Dispatcher.Invoke(() => PbStatus.Foreground = Brushes.Red);
                     RequestRate[pair.Key]++;
-                    if (RequestRate[pair.Key] >= pair.Value)
+                    while (RequestRate[pair.Key] >= pair.Value)
                     {
-                        Dispatcher.Invoke(() => PbStatus.Foreground = Brushes.Red);
-                        EventWaitHandle.WaitOne();
-                        Dispatcher.Invoke(() => PbStatus.Foreground = Brushes.Green);
+                        Thread.Sleep(1000);
                     }
-                    //while (RequestRate[pair.Key] >= pair.Value)
-                    //{
-                    //    Thread.Sleep(1000);
-                    //}
+                    //Dispatcher.Invoke(() => PbStatus.Foreground = Brushes.Green);
                 }
                 return _riotClient ?? (_riotClient = new RiotClient(RiotKey));
             }
         }
-
-        private EventWaitHandle _eventWaitHandle;
-        private EventWaitHandle EventWaitHandle => _eventWaitHandle ?? (_eventWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset));
 
         /// <summary>
         /// Cria um novo limite para requisições e inicia um timer para controle.
         /// </summary>
         private void LimitRate(TimeSpan timeSpan, int maxRate)
         {
+            //TbLimit.Text = maxRate.ToString();
             RateLimits.Add(timeSpan, maxRate);
             RequestRate.Add(timeSpan, 0);
             Timer timer = new Timer(timeSpan.TotalMilliseconds);
             timer.Elapsed += (sender, args) =>
             {
                 RequestRate[timeSpan] = 0;
-                EventWaitHandle.Set();
+                //Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() => TbRate.Text = RequestRate[timeSpan].ToString()));
             };
             timer.Start();
         }
@@ -322,7 +254,8 @@ namespace SummonerTracker
                 throw new ArgumentOutOfRangeException(nameof(names), names.Length, @"limite máximo de 40 elementos");
             }
 
-            foreach (KeyValuePair<string, SummonerDto> p in RiotClient.Summoner.GetSummonersByName(RiotApiConfig.Regions.BR, names.ToArray()))
+            Dictionary<string, SummonerDto> summonerDtos = RiotClient.Summoner.GetSummonersByName(RiotApiConfig.Regions.BR, names.ToArray());
+            foreach (KeyValuePair<string, SummonerDto> p in summonerDtos)
             {
                 Summoners.Add(p.Value);
             }
@@ -470,6 +403,29 @@ namespace SummonerTracker
                 });
                 try
                 {
+                    //Load Summoner information
+                    List<string> names = new List<string>();
+                    foreach (ListBoxItem item in LbSummoners.Items)
+                    {
+                        string name = Dispatcher.Invoke(() => item.Content.ToString());
+                        if (Summoners.Any(s => s.Name.Equals(name)))
+                        {
+                            continue;
+                        }
+
+                        names.Add(name);
+                        if (names.Count == 40)
+                        {
+                            GetSummoners(names.ToArray());
+                            names.Clear();
+                        }
+                    }
+                    if (names.Any())
+                    {
+                        GetSummoners(names.ToArray());
+                    }
+
+                    //Verify current game
                     foreach (SummonerDto sum in Summoners)
                     {
                         CurrentGameInfo cg;
@@ -482,7 +438,8 @@ namespace SummonerTracker
                             continue;
                         }
 
-                        Notify($"{sum.Name} is playing as {GetChampion(cg.Participants.Single(c => c.SummonerId == sum.Id).ChampionId).Name}.");
+                        ChampionDto champion = GetChampion(cg.Participants.Single(c => c.SummonerId == sum.Id).ChampionId);
+                        Notify(sum.Name, champion.Name, champion.Key);
                     }
                 }
                 finally
@@ -498,11 +455,20 @@ namespace SummonerTracker
             }) {IsBackground = true, Name = "Update Thread"}.Start();
         }
 
-        private void Notify(string notificationText)
+        private void Notify(string summonerName, string championName, string championKey)
         {
+            string notificationText = $"{summonerName} is playing as {championName}.";
             if (string.IsNullOrEmpty(PushalotKey) || PushalotKey.Equals("API_KEY"))
             {
-                ToastGenerator.Instance.ShowToast(ToastTemplateType.ToastText01, notificationText);
+                //ToastGenerator.Instance.ShowToast(ToastTemplateType.ToastText01, notificationText);
+                ToastGenerator.Instance.ShowToast($"http://ddragon.leagueoflegends.com/cdn/{DataVersion}/img/champion/{championKey}.png", championName, notificationText);
+                //ToastGenerator.Instance.ShowToast(
+                //    "http://blogs.msdn.com/cfs-filesystemfile.ashx/__key/communityserver-blogs-components-weblogfiles/00-00-01-71-81-permanent/2727.happycanyon1_5B00_1_5D00_.jpg", championName,
+                //    notificationText);
+                //ToastGenerator.Instance.ShowToast(
+                //    $"file:///C:\\Users\\Renato\\Downloads\\dragontail-6.15.1\\6.15.1\\img\\champion\\{championKey}.png",
+                //    championName, notificationText);
+                //ToastGenerator.Instance.ShowToast("ms-appx://Assets/Images/back.png", notificationText);
             }
             else
             {
@@ -534,29 +500,30 @@ namespace SummonerTracker
             }
         }
 
-        private void AddSummoner()
+        private void AddSummoner(string summonerName)
         {
-            LbSummoners.Items.Add(new ListBoxItem {Content = TbName.Text});
-            GetSummoners(TbName.Text);
-            TbName.Clear();
+            LbSummoners.Items.Add(new ListBoxItem {Content = summonerName});
+            GetSummoners(summonerName);
         }
 
         private void button_Click(object sender, RoutedEventArgs e)
         {
-            AddSummoner();
+            AddSummoner(TbName.Text);
+            TbName.Clear();
         }
 
         private void TbName_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                AddSummoner();
+                AddSummoner(TbName.Text);
+                TbName.Clear();
             }
         }
 
         private void PbStatus_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            UpdateResetTimer();
+            UpdateAndResetTimer();
         }
     }
 
