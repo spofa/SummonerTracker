@@ -461,7 +461,7 @@ namespace SummonerTracker
             if (string.IsNullOrEmpty(PushalotKey) || PushalotKey.Equals("API_KEY"))
             {
                 //ToastGenerator.Instance.ShowToast(ToastTemplateType.ToastText01, notificationText);
-                ToastGenerator.Instance.ShowToast($"http://ddragon.leagueoflegends.com/cdn/{DataVersion}/img/champion/{championKey}.png", championName, notificationText);
+                //ToastGenerator.Instance.ShowToast($"http://ddragon.leagueoflegends.com/cdn/{DataVersion}/img/champion/{championKey}.png", championName, notificationText);
                 //ToastGenerator.Instance.ShowToast(
                 //    "http://blogs.msdn.com/cfs-filesystemfile.ashx/__key/communityserver-blogs-components-weblogfiles/00-00-01-71-81-permanent/2727.happycanyon1_5B00_1_5D00_.jpg", championName,
                 //    notificationText);
